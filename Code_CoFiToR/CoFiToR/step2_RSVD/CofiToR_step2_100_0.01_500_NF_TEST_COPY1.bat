@@ -1,0 +1,3 @@
+javac BPR2RSVD.java
+java BPR2RSVD -d 100 -alpha_u 0.01 -alpha_v 0.01 -beta_u 0.01 -beta_v 0.01 -gamma 0.01 -fnTrainData Netflix.ExplicitPositive4Ranking.copy1.explicit -fnTestData Netflix.ExplicitPositive4Ranking.copy1.test -n 480189 -m 17770 -num_iterations 500 -topK 10 -fnInputCandidateItems CandidateItems_CofiToR_step1_BPR_RN_NF_copy1_100_0.001_1000 -fnOutputCandidateItems CofiToR_step2_TEST_NF_COPY1_CandidateList_100_0.01_500.txt> CofiToR_step2_TEST_NF_COPY1_LOG_100_0.01_500.txt
+pause

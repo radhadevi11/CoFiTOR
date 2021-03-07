@@ -1,0 +1,3 @@
+javac BPR_15_RN.java
+java BPR_15_RN -d 100 -alpha_u 0.001 -alpha_v 0.001 -beta_v 0.001 -gamma 0.01 -fnTrainData C:/Users/radha/Documents/Research/ml-25m/ml-25m/first_100_ratings.csv -fnTestData C:/Users/radha/Documents/Research/ml-25m/ml-25m/second_100_ratings.csv -n 3 -m 36527 -num_iterations 1000 -topK 15 -fnOutputCandidateItems CandidateItems_CofiToR_step1_BPR_RN_ML10M_copy1_100_0.001_1000 > LOG_CofiToR_step1_ML10M_BPR_RN_copy1_100_0.001_1000.txt
+pause

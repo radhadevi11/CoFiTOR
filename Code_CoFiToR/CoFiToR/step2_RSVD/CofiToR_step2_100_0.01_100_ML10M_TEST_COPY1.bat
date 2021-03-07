@@ -1,0 +1,3 @@
+javac BPR2RSVD.java
+java BPR2RSVD -d 100 -alpha_u 0.01 -alpha_v 0.01 -beta_u 0.01 -beta_v 0.01 -gamma 0.01 -fnTrainData ML10M.ExplicitPositive4Ranking.copy1.explicit -fnTestData ML10M.ExplicitPositive4Ranking.copy1.test -n 71567 -m 10681 -num_iterations 100 -topK 10 -fnInputCandidateItems CandidateItems_CofiToR_step1_BPR_RN_ML10M_copy1_100_0.001_1000 -fnOutputCandidateItems CofiToR_step2_TEST_10M_COPY1_CandidateList_100_0.01_100.txt> CofiToR_step2_TEST_10M_COPY1_LOG_100_0.01_100.txt
+pause
