@@ -1,0 +1,3 @@
+scp -i C:\Users\radha\Documents\radha.pem C:\Users\radha\Documents\Research\Code_CoFiToR\Code_CoFiToR\run_step1.sh ubuntu@18.222.209.59:/home/ubuntu
+scp -i C:\Users\radha\Documents\radha.pem C:\Users\radha\Documents\Research\Code_CoFiToR\Code_CoFiToR\CoFiToR\step1_BPR_RN\BPR_15_RN_copy.class ubuntu@18.222.209.59:/home/ubuntu
+scp -i C:\Users\radha\Documents\radha.pem C:\Users\radha\Documents\Research\Code_CoFiToR\Code_CoFiToR\CoFiToR\step1_BPR_RN\HeapSort.class ubuntu@18.222.209.59:/home/ubuntu

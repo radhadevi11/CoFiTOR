@@ -1,3 +1,3 @@
-javac BPR_15_RN.java
-java BPR_15_RN -d 100 -alpha_u 0.001 -alpha_v 0.001 -beta_v 0.001 -gamma 0.01 -fnTrainData C:/Users/radha/Documents/Research/ml-25m/ml-25m/first_100_ratings.csv -fnTestData C:/Users/radha/Documents/Research/ml-25m/ml-25m/second_100_ratings.csv -n 3 -m 36527 -num_iterations 1000 -topK 15 -fnOutputCandidateItems CandidateItems_CofiToR_step1_BPR_RN_ML10M_copy1_100_0.001_1000 > LOG_CofiToR_step1_ML10M_BPR_RN_copy1_100_0.001_1000.txt
-pause
+javac BPR_15_RN_copy.java
+java -Xmx3072m BPR_15_RN_copy -d 20 -alpha_u 0.001 -alpha_v 0.001 -beta_v 0.001 -gamma 0.01 -fnTrainData C:/Users/radha/Documents/Research/Code_CoFiToR/Code_CoFiToR/resources/ml-25m/set1.csv -fnTestData C:/Users/radha/Documents/Research/Code_CoFiToR/Code_CoFiToR/resources/ml-25m/set2.csv -n 1954 -m 1373 -num_iterations 100 -topK 10 -fnOutputCandidateItems CandidateItems_CofiToR_step1_BPR_RN_ML10M_copy1_100_0 - Copy > LOG_CofiToR_step1_ML10M_BPR_RN_copy1_100_0.001_1000.txt
+#-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=5005
