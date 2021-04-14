@@ -19,6 +19,8 @@ public class BPR_15_RN_copy
     // === Input Data files
     public static String fnTrainData = "";
     public static String fnTestData = "";
+    public static String fnItemERTData = "";
+    public static String fnUserERTData = "";
 	public static String fnOutputCandidateItems = "";
 	
 	// === 
@@ -46,6 +48,8 @@ public class BPR_15_RN_copy
 	
 	// === training data: user -> item -> rating
 		public static HashMap<Integer, HashMap<Integer, Float>> TrainData = new HashMap<Integer,HashMap<Integer, Float>>();
+		public static HashMap<Integer, Float> itemERT = new HashMap<>();
+		public static HashMap<Integer, Float> userERT = new HashMap<>();
 
     // === training data used for uniformly random sampling
     public static int[] indexUserTrain; // start from index "0"
@@ -92,6 +96,10 @@ public class BPR_15_RN_copy
             }
 			else if (args[k].equals("-fnTestData"))
 				fnTestData = args[++k];
+			else if (args[k].equals("-fnUserERTData"))
+				fnUserERTData = args[++k];
+			else if (args[k].equals("-fnItemERTData"))
+				fnItemERTData = args[++k];
 			else if (args[k].equals("-n"))
 				n = Integer.parseInt(args[++k]);
 			else if (args[k].equals("-m"))
@@ -264,7 +272,36 @@ public class BPR_15_RN_copy
 		System.out.println("users_Input=" + userSetTrain.size());
 		br.close();
 		// ------------------------------
-		
+
+		// ------------------------------
+		// === RateTime Data
+		br = new BufferedReader(new FileReader(fnItemERTData));
+		line = null;
+
+		while ((line = br.readLine()) != null) {
+			String[] terms = line.split("\\s+|,|;");
+			int movieId = Integer.parseInt(terms[0]);
+			float minNormalizedItemRateTime = Float.parseFloat(terms[1]);
+			itemERT.put(movieId, minNormalizedItemRateTime);
+
+		}
+		br.close();
+		// ------------------------------
+
+		// === RateTime Data
+		br = new BufferedReader(new FileReader(fnUserERTData));
+		line = null;
+
+		while ((line = br.readLine()) != null) {
+			String[] terms = line.split("\\s+|,|;");
+			int movieId = Integer.parseInt(terms[0]);
+			float avgNormalizedUserRateTime = Float.parseFloat(terms[1]);
+			userERT.put(movieId, avgNormalizedUserRateTime);
+
+		}
+		br.close();
+		// ------------------------------
+
 		// ------------------------------
 		// === Test Data
 		br = new BufferedReader(new FileReader(fnTestData));
@@ -319,19 +356,29 @@ public class BPR_15_RN_copy
     	// --- initialization of U and V
     	for (int u=1; u<n+1; u++)
     	{
-    		for (int f=0; f<d; f++)
+    		for (int f=0; f<d-1; f++)
     		{
     			U[u][f] = (float) ( (Math.random()-0.5)*0.01 );
     		}
+//			if (userERT.containsKey(u)) {
+//
+//				U[u][d-1] = userERT.get(u);
+//			}
+			U[u][d-1] = (float) ((Math.random()-0.5)*0.01);
 
     	}
 		//
     	for (int i=1; i<m+1; i++)
     	{
-    		for (int f=0; f<d; f++)
+    		for (int f=0; f<d-1; f++)
     		{
     			V[i][f] = (float) ( (Math.random()-0.5)*0.01 );
     		}
+//    		if(itemERT.containsKey(i)){
+//
+//				V[i][d-1] = itemERT.get(i);
+//			}
+			V[i][d-1] = (float) ( (Math.random()-0.5)*0.01 );
     	}
     	// ------------------------------
     	
@@ -429,7 +476,8 @@ public class BPR_15_RN_copy
 					// --- update Vi
 					V[i][f] = V[i][f] - gamma * grad_V_i_f; 
 					// --- update Vj
-					V[j][f] = V[j][f] - gamma * grad_V_j_f; 
+					V[j][f] = V[j][f] - gamma * grad_V_j_f;
+
 				}
 				// ------------------------------
 
@@ -564,7 +612,6 @@ public class BPR_15_RN_copy
 				DCG[k] = DCG[k - 1];
 				int itemID = TopKResult[k];
 				if (ItemSet_u_TestData.contains(itemID)) {
-                    System.out.println("Hitsum increment");
 					HitSum += 1;
 					DCG[k] += 1 / Math.log(k + 1);
 				}
@@ -598,8 +645,6 @@ public class BPR_15_RN_copy
     	// --- precision@k
     	for(int k=1; k<=topK; k++)
     	{
-            System.out.println("PrecisionSum[k]:"+PrecisionSum[k]);
-            System.out.println("UserNum_TestData:"+UserNum_TestData);
     		float prec = PrecisionSum[k]/UserNum_TestData;
     		System.out.println("Prec@"+k+":"+prec);
     	}
