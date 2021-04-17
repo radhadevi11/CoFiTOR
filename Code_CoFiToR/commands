@@ -1,0 +1,7 @@
+//copy files from local machine to ec2-instance
+scp -i radha.pem C:\Users\radha\Documents\Research\Code_CoFiToR\Code_CoFiToR\run_step1.sh ubuntu@18.222.209.59:/home/ubuntu
+
+//copy files from ec2-instance to local machine
+scp -i radha.pem ubuntu@18.222.209.59:/home/ubuntu/step1_log.txt C:\Users\radha\Documents\Research\review3\step1_log.txt
+
+scp -i radha.pem ubuntu@18.222.209.59:/home/ubuntu/enhanced_step1_log.txt C:\Users\radha\Documents\Research\review3\enhanced_step1_log.txt

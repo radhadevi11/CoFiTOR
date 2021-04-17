@@ -184,3 +184,78 @@ sql_mode=STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_
 sudo service mysql restart;
 
 SET sql_mode=(SELECT REPLACE(@@sql_mode,'ONLY_FULL_GROUP_BY',''));
+
+select * from (
+select user_id, genre_id, genre_count, rank() over (partition by user_id order by genre_count desc) genre_rank  from (
+select o.user_id, s.genre_id, count(s.genre_id) as genre_count
+from set1_set2_movie_info s INNER JOIN step1_output o
+ON s.movies_id = o.movie_id
+where o.user_id<7
+group by o.user_id, s.genre_id) genre_count_by_user) ranked_genres
+where genre_rank=1;
+
+
+update movie_info set norm_year=((movie_year - 0) / (2019 - 0));
+
+movie_age - item feature (-0.5 to 0.5)
+user_movie_age_pref  - user feature (-0.5 to 0.5)
+-- user likes old movies and the given movie is old => v = -0.4 u= -0.4
+--- r ui = u*v = 0.16
+-- user likes new movies and the given movie is new => v = 0.4 u= 0.4
+--- r ui = u*v = 0.16
+-- user likes old movies and the given movie is new => v = 0.4 u= -0.4
+--- r ui = u*v = -0.16
+-- user likes new movies and the given movie is old => v = -0.4 u= 0.4
+--- r ui = u*v = -0.16
+
+if (fv > 0) fv = 0.005-fv else fv = fv -0.005
+
+fv = 0.4
+=> fv = 0.1
+fv = -0.4
+=> fv = -0.4 - (-0.5) = 0.1
+
+csv file: -0.005 to 0.005
+-- sigmoid(rui - ruj)
+-- 1/(1+ pow(e, (rui-ruj))
+--sigmod(0.16-(-0.16)) = simod(0.32) = 0.59 -- examined preferred item, not examined non-preferred item
+--sigmod(0.16-(0.16)) = simod(0.0) = 0.5 -- examined preferred item, not examined preferred item
+--sigmod(-0.16-(-0.16)) = simod(0.0) = 0.5 -- examined non-preferred item, not examined non-preferred item
+--sigmod(-0.16-(0.16)) = simod(-0.32) = 0.47 -- examined non-preferred item, not examined preferred item
+
+--testranking
+-- user u1
+-- r11 = UVt = [uf1 uf2     uf20]*[vf1 vf2    vf20] = v1
+-- r12 = UVt = [uf1 uf2     uf20]*[vf1 vf2    vf20] = v2
+
+
+
+update set1_set2_movie_info set movie_year = null where movie_year = 0;
+update set1_set2_movie_info set movie_year = null where movie_year = 0;
+
+select min(movie_year) from set1_set2_movie_info;
+
+select max(movie_year) from set1_set2_movie_info;
+
+
+update set1_set2_movie_info set norm_year = case
+when movie_year is null then ((rand() - 0.5)*0.01)
+else ((movie_year - 1880) / (2019 - 1880) - 0.5) * 0.01
+end;
+
+select distinct set1_set2_movie_info.movies_id, (set1_set2_movie_info.norm_year) from set1_set2_movie_info
+INTO OUTFILE '/var/lib/mysql-files/ItemERTData.csv'
+FIELDS TERMINATED BY ','
+ESCAPED BY '"'
+LINES TERMINATED BY '\n';
+
+select users.id, avg(info.norm_year)
+from set1 inner join (select distinct movie_id, norm_year from set1_set2_movie_info) as info
+on set1.movie_id = info.movie_id inner join users
+on users.user_id = set1.user_id inner join movies
+on movies.movie_id = set1.movie_id
+group by users.id
+INTO OUTFILE '/var/lib/mysql-files/UserERTData.csv'
+FIELDS TERMINATED BY ','
+ESCAPED BY '"'
+LINES TERMINATED BY '\n';
