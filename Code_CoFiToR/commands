@@ -3,5 +3,12 @@ scp -i radha.pem C:\Users\radha\Documents\Research\Code_CoFiToR\Code_CoFiToR\run
 
 //copy files from ec2-instance to local machine
 scp -i radha.pem ubuntu@18.222.209.59:/home/ubuntu/step1_log.txt C:\Users\radha\Documents\Research\review3\step1_log.txt
+scp -i radha.pem ubuntu@18.222.209.59:/home/ubuntu/step1_log.txt C:\Users\radha\Documents\Research\viva\step1_log.txt
+scp -i radha.pem ubuntu@18.222.209.59:/home/ubuntu/step1_output_file.csv C:\Users\radha\Documents\Research\viva\step1_output_file.csv
 
 scp -i radha.pem ubuntu@18.222.209.59:/home/ubuntu/enhanced_step1_log.txt C:\Users\radha\Documents\Research\review3\enhanced_step1_log.txt
+scp -i radha.pem ubuntu@18.222.209.59:/home/ubuntu/enhanced_step1_output C:\Users\radha\Documents\Research\viva\enhanced_step1_output.csv
+scp -i radha.pem ubuntu@18.222.209.59:/home/ubuntu/enhanced_step1_output_apr_25 C:\Users\radha\Documents\Research\viva\enhanced_step1_output_apr_25.csv
+scp -i radha.pem ubuntu@18.222.209.59:/home/ubuntu/enhanced_step1_log_apr_25.txt C:\Users\radha\Documents\Research\review3\enhanced_step1_log_apr_25.txt
+
+scp -i radha.pem ubuntu@18.222.209.59:/var/lib/mysql-files/set1.csv C:\Users\radha\Documents\Research\viva\set1.csv

@@ -48,8 +48,7 @@ public class BPR_15_RN_copy
 	
 	// === training data: user -> item -> rating
 		public static HashMap<Integer, HashMap<Integer, Float>> TrainData = new HashMap<Integer,HashMap<Integer, Float>>();
-		public static HashMap<Integer, Float> itemERT = new HashMap<>();
-		public static HashMap<Integer, Float> userERT = new HashMap<>();
+
 
     // === training data used for uniformly random sampling
     public static int[] indexUserTrain; // start from index "0"
@@ -275,31 +274,10 @@ public class BPR_15_RN_copy
 
 		// ------------------------------
 		// === RateTime Data
-		br = new BufferedReader(new FileReader(fnItemERTData));
-		line = null;
-
-		while ((line = br.readLine()) != null) {
-			String[] terms = line.split("\\s+|,|;");
-			int movieId = Integer.parseInt(terms[0]);
-			float minNormalizedItemRateTime = Float.parseFloat(terms[1]);
-			itemERT.put(movieId, minNormalizedItemRateTime);
-
-		}
-		br.close();
-		// ------------------------------
+				// ------------------------------
 
 		// === RateTime Data
-		br = new BufferedReader(new FileReader(fnUserERTData));
-		line = null;
 
-		while ((line = br.readLine()) != null) {
-			String[] terms = line.split("\\s+|,|;");
-			int movieId = Integer.parseInt(terms[0]);
-			float avgNormalizedUserRateTime = Float.parseFloat(terms[1]);
-			userERT.put(movieId, avgNormalizedUserRateTime);
-
-		}
-		br.close();
 		// ------------------------------
 
 		// ------------------------------
@@ -356,29 +334,20 @@ public class BPR_15_RN_copy
     	// --- initialization of U and V
     	for (int u=1; u<n+1; u++)
     	{
-    		for (int f=0; f<d-1; f++)
+    		for (int f=0; f<d; f++)
     		{
     			U[u][f] = (float) ( (Math.random()-0.5)*0.01 );
     		}
-//			if (userERT.containsKey(u)) {
-//
-//				U[u][d-1] = userERT.get(u);
-//			}
-			U[u][d-1] = (float) ((Math.random()-0.5)*0.01);
+
 
     	}
 		//
     	for (int i=1; i<m+1; i++)
     	{
-    		for (int f=0; f<d-1; f++)
+    		for (int f=0; f<d; f++)
     		{
     			V[i][f] = (float) ( (Math.random()-0.5)*0.01 );
     		}
-//    		if(itemERT.containsKey(i)){
-//
-//				V[i][d-1] = itemERT.get(i);
-//			}
-			V[i][d-1] = (float) ( (Math.random()-0.5)*0.01 );
     	}
     	// ------------------------------
     	
@@ -406,6 +375,7 @@ public class BPR_15_RN_copy
 	{
 
 		for (int iter = 0; iter < num_iterations; iter++) {
+
 			for (int iter2 = 0; iter2 < num_train; iter2++) {
                 /*System.out.println("training iteration "+iter);
                 System.out.println("training item "+iter2);*/
@@ -496,7 +466,9 @@ public class BPR_15_RN_copy
 		}
 	}
     // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-	
+//	float costFunction(int u, int i, int j) {
+//
+//	}
     
 	// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++		
 	public static void testRanking(HashMap<Integer, HashSet<Integer>> TestData) throws IOException

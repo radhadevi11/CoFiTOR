@@ -362,8 +362,8 @@ public class FeatureEnhancedBPR
     		}
 			if (userERT.containsKey(u)) {
 
-				Float userFeature = getNormalizeFeature(userERT.get(u));
-				U[u][d - 1] = userFeature;
+				//Float userFeature = getNormalizeFeature(userERT.get(u));
+				U[u][d - 1] = userERT.get(u);
 			}
 
     	}
@@ -375,9 +375,9 @@ public class FeatureEnhancedBPR
     			V[i][f] = (float) ( (Math.random()-0.5)*0.01 );
     		}
     		if(itemERT.containsKey(i)){
-    			Float itemFeature = getNormalizeFeature(itemERT.get(i));
+    			//Float itemFeature = getNormalizeFeature(itemERT.get(i));
 
-				V[i][d-1] = itemFeature;
+				V[i][d-1] = itemERT.get(i);
 			}
     	}
     	// ------------------------------
@@ -464,9 +464,15 @@ public class FeatureEnhancedBPR
 				// --- calculate the loss
 				float r_uij = biasV[i] - biasV[j];
 				for (int f = 0; f < d; f++) {
-					r_uij += U[u][f] * (V[i][f] - V[j][f]);
+					if(f == d -1 ) {
+						r_uij += -(U[u][f] * (V[i][f] - V[j][f]));
+					}
+					else {
+						r_uij += U[u][f] * (V[i][f] - V[j][f]);
+					}
+
 				}
-				// ------------------------------
+				// ------------------------------ a*(b-c) = a*b -a*c
 
 				// ------------------------------
 				float EXP_r_uij = (float) Math.pow(Math.E, r_uij);
