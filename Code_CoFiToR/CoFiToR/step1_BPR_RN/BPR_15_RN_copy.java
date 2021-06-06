@@ -1,6 +1,10 @@
+import refactor.TrainingData;
+
 import java.io.*;
 import java.util.*;
 import java.util.Map.Entry;
+import java.nio.file.*;
+import java.util.stream.Stream;
 
 public class BPR_15_RN_copy
 {
@@ -41,14 +45,7 @@ public class BPR_15_RN_copy
 	public static int topK = 5; // top k in evaluation
 	
     // === users in the training data(>=1/>=0.5)
-	public static HashSet<Integer> userSetTrain = new HashSet<>();
-
-	// === items in the training data(>=1/>=0.5)
-	public static HashSet<Integer> ItemSetTrain = new HashSet<Integer>(); 
-	
-	// === training data: user -> item -> rating
-		public static HashMap<Integer, HashMap<Integer, Float>> TrainData = new HashMap<Integer,HashMap<Integer, Float>>();
-
+	public static TrainingData trainingData;
 
     // === training data used for uniformly random sampling
     public static int[] indexUserTrain; // start from index "0"
@@ -171,12 +168,12 @@ public class BPR_15_RN_copy
     	int idx = 0;
     	for(int u=1; u<=n; u++)
     	{
-    		if (!TrainData.containsKey(u))
+    		if (!trainingData.doesUserExist(u))
     			continue;
-    		HashMap<Integer,Float> Item_Rating = new HashMap<>();
-    		if (TrainData.containsKey(u))
+    		Map<Integer,Float> Item_Rating = new HashMap<>();
+    		if (trainingData.doesUserExist(u))
     		{
-    			Item_Rating = TrainData.get(u);
+    			Item_Rating = trainingData.getRatedItems(u);
     		}
     		for(int i : Item_Rating.keySet())
     		{
@@ -225,90 +222,31 @@ public class BPR_15_RN_copy
     // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     public static void readDataTrainTest() throws Exception
 	{
-		// ------------------------------
-		// === Train Data
-		BufferedReader br = new BufferedReader(new FileReader(fnTrainData));
-		String line = null;
-		br.readLine();
-//        while ((line = br.readLine()) != null) {
-//            System.out.println(line);
-//        }
-		while ((line = br.readLine()) != null) {
-			String[] terms = line.split("\\s+|,|;");
-			int userID = Integer.parseInt(terms[0]);
-			int itemID = Integer.parseInt(terms[1]);
-			float rating = Float.parseFloat(terms[2]);
-			float when_rated_normalized = Float.parseFloat(terms[4]);
+		trainingData = new TrainingData(fnTrainData, m);
+		System.out.println("users_Train=" + trainingData.getNoOfUsers());
+		System.out.println("users_Input=" + trainingData.getNoOfUsers());
+		Path testDataPath = new File(fnTestData).toPath();
+	    try (Stream<String> lines = Files.lines(testDataPath)) {
+			//int num_test = 0;
+	    	lines.forEach(line -> {
+				readTestDataLine(line);
+			});
+        }
 
-			// --- add to the train user set
-			userSetTrain.add(userID);
-			
-			// --- add to the train item set
-			ItemSetTrain.add(itemID);
-
-			if (TrainData.containsKey(userID)) {
-				HashMap<Integer,Float> item_rating = TrainData.get(userID);
-				item_rating.put(itemID, rating);
-				TrainData.put(userID, item_rating);
-			} else {
-				HashMap<Integer,Float> item_rating = new HashMap<>();
-				item_rating.put(itemID, rating);
-				TrainData.put(userID, item_rating);
-			}
-			
-			// --- statistics
-
-            itemRatingNumTrain[itemID] += 1;
-
-			num_train += 1; // number of user-item pairs in train data
-            /*if(num_train > 100) {
-                break;
-            }*/
-
-		}
-		
-		System.out.println("users_Train=" + TrainData.size());
-		System.out.println("users_Input=" + userSetTrain.size());
-		br.close();
-		// ------------------------------
-
-		// ------------------------------
-		// === RateTime Data
-				// ------------------------------
-
-		// === RateTime Data
-
-		// ------------------------------
-
-		// ------------------------------
-		// === Test Data
-		br = new BufferedReader(new FileReader(fnTestData));
-		line = null;
-        int num_test = 0;
-        br.readLine();
-		while ((line = br.readLine()) != null) {
-		    num_test++;
-			String[] terms = line.split("\\s+|,|;");
-			int userID = Integer.parseInt(terms[0]);
-			int itemID = Integer.parseInt(terms[1]);
-
-			if (TestData.containsKey(userID)) {
-				HashSet<Integer> itemSet = TestData.get(userID);
-				itemSet.add(itemID);
-				TestData.put(userID, itemSet);
-			} else {
-				HashSet<Integer> itemSet = new HashSet<Integer>();
-				itemSet.add(itemID);
-				TestData.put(userID, itemSet);
-			}
-			/*if(num_test > 10000) {
-			    break;
-            }*/
-		} 
 		System.out.println( "The number of users in the test data(including cold-sart users): " + TestData.size() );
-		br.close();
-		// ------------------------------
+
 	}
+
+	private static void readTestDataLine(String line) {
+
+		String[] terms = line.split("\\s+|,|;");
+		int userID = Integer.parseInt(terms[0]);
+		int itemID = Integer.parseInt(terms[1]);
+
+		TestData.computeIfAbsent(userID, u -> new HashSet<>()).add(itemID);
+	}
+
+
     // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     
     
@@ -332,42 +270,47 @@ public class BPR_15_RN_copy
 		
 		// ------------------------------  	
     	// --- initialization of U and V
-    	for (int u=1; u<n+1; u++)
-    	{
-    		for (int f=0; f<d; f++)
-    		{
-    			U[u][f] = (float) ( (Math.random()-0.5)*0.01 );
-    		}
-
-
-    	}
+		populateVectorMatrix(n, U);
 		//
-    	for (int i=1; i<m+1; i++)
-    	{
-    		for (int f=0; f<d; f++)
-    		{
-    			V[i][f] = (float) ( (Math.random()-0.5)*0.01 );
-    		}
-    	}
-    	// ------------------------------
+		populateVectorMatrix(m, V);
+		// ------------------------------
     	
     	// ------------------------------
     	// --- initialization of biasV
     	float g_avg = 0;
-    	for (int i=1; i<m+1; i++)
-    	{
-    		g_avg += itemRatingNumTrain[i];
-    	}
-    	g_avg = g_avg/n/m;
+		g_avg = computeGAvg(g_avg);
+		g_avg = g_avg/n/m;
     	System.out.println( "The global average rating:" + Float.toString(g_avg) );
-    	
-    	for (int i=1; i<m+1; i++)
-    	{
-    		 biasV[i]= (float) itemRatingNumTrain[i] / n - g_avg;
-    	}
-    	// ------------------------------   
+
+		populateBiasV(g_avg);
+		// ------------------------------
     }
-    // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+	private static void populateBiasV(float g_avg) {
+		for (int i=1; i<m+1; i++)
+		{
+			 biasV[i]= (float) itemRatingNumTrain[i] / n - g_avg;
+		}
+	}
+
+	private static float computeGAvg(float g_avg) {
+		for (int i=1; i<m+1; i++)
+		{
+			g_avg += itemRatingNumTrain[i];
+		}
+		return g_avg;
+	}
+
+	private static void populateVectorMatrix(int n, float[][] u2) {
+		for (int u = 1; u < n + 1; u++) {
+			for (int f = 0; f < d; f++) {
+				u2[u][f] = (float) ((Math.random() - 0.5) * 0.01);
+			}
+
+
+		}
+	}
+	// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     
     
     // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -403,7 +346,7 @@ public class BPR_15_RN_copy
 				// ------------------------------
 
 				// --- item -> rating of user u
-				Map<Integer, Float> Item_Rating = TrainData.get(u);
+				Map<Integer, Float> Item_Rating = trainingData.getRatedItems(u);
 				
 				int j = i;
 				while (true) {
@@ -412,7 +355,7 @@ public class BPR_15_RN_copy
 					j = (int) Math.floor(Math.random() * m) + 1;
 					
 					// --- check if item j is a negative sample
-					if (ItemSetTrain.contains(j) && !Item_Rating.containsKey(j))
+					if (trainingData.doesItemExist(j) && !Item_Rating.containsKey(j))
 					{
 						break;
 					} else {
@@ -504,13 +447,13 @@ public class BPR_15_RN_copy
 		for (int u = 1; u <= n; u++) {
 			
 			// --- check whether the user $u$ is in the train user set
-			if (!userSetTrain.contains(u))
+			if (!trainingData.doesUserExist(u))
 				continue;
 
 			// --- item-rating paris train set of user $u$
-			HashMap<Integer,Float> ItemSet_u_TrainData = new HashMap<>();
-			if (TrainData.containsKey(u)) {
-				ItemSet_u_TrainData = TrainData.get(u);
+			Map<Integer,Float> ItemSet_u_TrainData = new HashMap<>();
+			if (trainingData.doesUserExist(u)) {
+				ItemSet_u_TrainData = trainingData.getRatedItems(u);
 			}
 
 			// ------------------------------
@@ -522,7 +465,7 @@ public class BPR_15_RN_copy
 				
 				// --- (1) check whether item $i$ is in the train item set
 				// --- (2) check whether item $i$ appears in the training set of user $u$
-				if (!ItemSetTrain.contains(i) || ItemSet_u_TrainData.containsKey(i))
+				if (!trainingData.doesItemExist(i) || ItemSet_u_TrainData.containsKey(i))
 					continue;
 
 				// --- prediction via inner product
