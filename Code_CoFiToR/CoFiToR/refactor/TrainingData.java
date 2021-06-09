@@ -4,17 +4,15 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.*;
 import java.util.stream.Stream;
-import java.util.Map;
-import java.util.Set;
 
 public class TrainingData {
     private  Set<Integer> itemSetTrain = new HashSet<>();
     private final Map<Integer,Map<Integer, Float>> trainData = new HashMap<>();
     private int numTrain = 0;
     private int[] itemRatingNumTrain;
+    List<OneRow> rows = new ArrayList<>();
 
 
 
@@ -59,6 +57,33 @@ public class TrainingData {
 
     public int getNoOfUsers () {
         return this.trainData.size();
+    }
+
+    public void populateTriplets() {
+        for(int u=1; u<=numTrain; u++)
+        {
+            if (!this.doesUserExist(u))
+                continue;
+            Map<Integer,Float> item_Rating = new HashMap<>();
+            if (this.doesUserExist(u))
+            {
+                item_Rating = this.getRatedItems(u);
+            }
+            for(int i : item_Rating.keySet())
+            {
+                rows.add(new OneRow(u, i, item_Rating.get(i)));
+            }
+        }
+    }
+
+    public int getUserId(int index) {
+        return this.rows.get(index).getUserId();
+    }
+    public int getItemId(int index) {
+        return this.rows.get(index).getItemId();
+    }
+    public float getRating (int index) {
+        return this.rows.get(index).getRatings();
     }
 
 }

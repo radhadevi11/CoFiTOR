@@ -47,10 +47,6 @@ public class BPR_15_RN_copy
     // === users in the training data(>=1/>=0.5)
 	public static TrainingData trainingData;
 
-    // === training data used for uniformly random sampling
-    public static int[] indexUserTrain; // start from index "0"
-    public static int[] indexItemTrain; // start from index "0"
-    public static float[] indexRatingTrain; // start from index "0"
     
     // === test data: user -> item set
     public static HashMap<Integer, HashSet<Integer>> TestData = new HashMap<Integer, HashSet<Integer>>(); 
@@ -161,28 +157,9 @@ public class BPR_15_RN_copy
 		
     	// ------------------------------
 		// === construct index arraies for records in train data
-    	indexUserTrain = new int[num_train];
-    	indexItemTrain = new int[num_train];
-    	indexRatingTrain = new float[num_train];	
+
 		
-    	int idx = 0;
-    	for(int u=1; u<=n; u++)
-    	{
-    		if (!trainingData.doesUserExist(u))
-    			continue;
-    		Map<Integer,Float> Item_Rating = new HashMap<>();
-    		if (trainingData.doesUserExist(u))
-    		{
-    			Item_Rating = trainingData.getRatedItems(u);
-    		}
-    		for(int i : Item_Rating.keySet())
-    		{
-    			indexUserTrain[idx] = u;
-    			indexItemTrain[idx] = i;
-    			indexRatingTrain[idx] = Item_Rating.get(i);
-    			idx += 1;
-    		}
-    	}
+    	trainingData.populateTriplets();
     	// ------------------------------
     	
     	
@@ -325,12 +302,12 @@ public class BPR_15_RN_copy
 				// ------------------------------
 				// --- randomly sample a user-item-rating trriple, Math.random(): [0.0, 1.0)
 				int idx = (int) Math.floor(Math.random() * num_train);
-				if(indexUserTrain[idx] == 0){
-				    continue;
-                }
-				int u = indexUserTrain[idx];
-				int i = indexItemTrain[idx];
-				float rating = indexRatingTrain[idx];
+//				if(indexUserTrain[idx] == 0){
+//				    continue;
+//                }
+				int u = trainingData.getUserId(idx);
+				int i = trainingData.getItemId(idx);
+				float rating = trainingData.getRating(idx);
 				
 				// ------------------------------
 				// --- normalize rating
