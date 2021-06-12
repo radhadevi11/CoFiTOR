@@ -5,20 +5,22 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import java.util.stream.IntStream;
 
 public class TrainingData {
     private  Set<Integer> itemSetTrain = new HashSet<>();
     private final Map<Integer,Map<Integer, Float>> trainData = new HashMap<>();
     private int numTrain = 0;
-    private int[] itemRatingNumTrain;
-    List<OneRow> rows = new ArrayList<>();
+    private Map<Integer, Integer> ratedItemCount = new HashMap<>();
+    private List<ItemRatedByUser> itemRatedByUserList ;
 
 
 
-    public TrainingData(String trainDataFile, int noOfItems) throws IOException {
-        itemRatingNumTrain = new int[noOfItems];
+    public TrainingData(String trainDataFile) throws IOException {
         readDataTrainTest(trainDataFile);
+        populateItemRatedByUserList();
     }
 
     private void readDataTrainTest(String trainDataFile) throws IOException {
@@ -38,7 +40,7 @@ public class TrainingData {
         float when_rated_normalized = Float.parseFloat(terms[4]);
         itemSetTrain.add(itemID);
         trainData.computeIfAbsent(userID, u -> new HashMap<>()).put(itemID, rating);
-        itemRatingNumTrain[itemID] += 1;
+        ratedItemCount.merge(itemID, 1, (countSoFar, newCount) -> countSoFar+1);
         this.numTrain++;
     }
 
@@ -59,31 +61,27 @@ public class TrainingData {
         return this.trainData.size();
     }
 
-    public void populateTriplets() {
-        for(int u=1; u<=numTrain; u++)
-        {
-            if (!this.doesUserExist(u))
-                continue;
-            Map<Integer,Float> item_Rating = new HashMap<>();
-            if (this.doesUserExist(u))
-            {
-                item_Rating = this.getRatedItems(u);
-            }
-            for(int i : item_Rating.keySet())
-            {
-                rows.add(new OneRow(u, i, item_Rating.get(i)));
-            }
-        }
+    public void populateItemRatedByUserList() {
+        itemRatedByUserList = IntStream.range(1, getNoOfUsers() + 1)
+                .boxed()
+                .filter(this::doesUserExist)
+                .flatMap(u -> this.getRatedItems(u).entrySet().stream()
+                        .map(entry -> new ItemRatedByUser(u, entry.getKey(), entry.getValue())))
+                .collect(Collectors.toList());
+
     }
 
     public int getUserId(int index) {
-        return this.rows.get(index).getUserId();
+        return this.itemRatedByUserList.get(index).getUserId();
     }
     public int getItemId(int index) {
-        return this.rows.get(index).getItemId();
+        return this.itemRatedByUserList.get(index).getItemId();
     }
     public float getRating (int index) {
-        return this.rows.get(index).getRatings();
+        return this.itemRatedByUserList.get(index).getRatings();
+    }
+    public Map<Integer, Integer> getRatedItemCount() {
+        return ratedItemCount;
     }
 
 }

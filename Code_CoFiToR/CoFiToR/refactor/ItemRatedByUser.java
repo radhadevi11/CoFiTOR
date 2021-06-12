@@ -1,11 +1,11 @@
 package refactor;
 
-public class OneRow {
+public class ItemRatedByUser {
     private int userId;
     private int itemId;
     private float ratings;
 
-    public OneRow(int userId, int itemId, float ratings) {
+    public ItemRatedByUser(int userId, int itemId, float ratings) {
         this.userId = userId;
         this.itemId = itemId;
         this.ratings = ratings;

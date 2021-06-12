@@ -1,10 +1,9 @@
+import refactor.TestingData;
 import refactor.TrainingData;
 
 import java.io.*;
 import java.util.*;
 import java.util.Map.Entry;
-import java.nio.file.*;
-import java.util.stream.Stream;
 
 public class BPR_15_RN_copy
 {
@@ -46,14 +45,10 @@ public class BPR_15_RN_copy
 	
     // === users in the training data(>=1/>=0.5)
 	public static TrainingData trainingData;
+	public static TestingData testingData;
 
     
     // === test data: user -> item set
-    public static HashMap<Integer, HashSet<Integer>> TestData = new HashMap<Integer, HashSet<Integer>>(); 
-
-    // === some statistics
-    public static int[] itemRatingNumTrain; // start from index "1"
-    
     // === model parameters to learn, start from index "1"
     public static float[][] U;
     public static float[][] V;
@@ -127,7 +122,6 @@ public class BPR_15_RN_copy
 		
     	// ------------------------------ 	
     	// === some statistics 
-        itemRatingNumTrain = new int[m+1]; // start from index "1"
         // ------------------------------
 		
 		
@@ -158,8 +152,7 @@ public class BPR_15_RN_copy
     	// ------------------------------
 		// === construct index arraies for records in train data
 
-		
-    	trainingData.populateTriplets();
+
     	// ------------------------------
     	
     	
@@ -186,7 +179,7 @@ public class BPR_15_RN_copy
     	// ------------------------------
     	// === Step 4: Re-ranking and Evaluation    	
     	long TIME_START_TEST = System.currentTimeMillis();
-    	testRanking(TestData);
+    	testRanking(testingData);
     	long TIME_FINISH_TEST = System.currentTimeMillis();
     	System.out.println("Elapsed Time (test):" + 
     				Float.toString((TIME_FINISH_TEST-TIME_START_TEST)/1000F)
@@ -199,29 +192,17 @@ public class BPR_15_RN_copy
     // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     public static void readDataTrainTest() throws Exception
 	{
-		trainingData = new TrainingData(fnTrainData, m);
+		trainingData = new TrainingData(fnTrainData);
+		testingData = new TestingData(fnTestData);
 		System.out.println("users_Train=" + trainingData.getNoOfUsers());
 		System.out.println("users_Input=" + trainingData.getNoOfUsers());
-		Path testDataPath = new File(fnTestData).toPath();
-	    try (Stream<String> lines = Files.lines(testDataPath)) {
-			//int num_test = 0;
-	    	lines.forEach(line -> {
-				readTestDataLine(line);
-			});
-        }
 
-		System.out.println( "The number of users in the test data(including cold-sart users): " + TestData.size() );
+
+		System.out.println( "The number of users in the test data(including cold-sart users): " + testingData.getSize() );
 
 	}
 
-	private static void readTestDataLine(String line) {
 
-		String[] terms = line.split("\\s+|,|;");
-		int userID = Integer.parseInt(terms[0]);
-		int itemID = Integer.parseInt(terms[1]);
-
-		TestData.computeIfAbsent(userID, u -> new HashSet<>()).add(itemID);
-	}
 
 
     // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -266,14 +247,14 @@ public class BPR_15_RN_copy
 	private static void populateBiasV(float g_avg) {
 		for (int i=1; i<m+1; i++)
 		{
-			 biasV[i]= (float) itemRatingNumTrain[i] / n - g_avg;
+			 biasV[i]= (float) trainingData.getRatedItemCount().get(i) / n - g_avg;
 		}
 	}
 
 	private static float computeGAvg(float g_avg) {
 		for (int i=1; i<m+1; i++)
 		{
-			g_avg += itemRatingNumTrain[i];
+			g_avg += trainingData.getRatedItemCount().get(i);
 		}
 		return g_avg;
 	}
@@ -391,7 +372,7 @@ public class BPR_15_RN_copy
 //	}
     
 	// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++		
-	public static void testRanking(HashMap<Integer, HashSet<Integer>> TestData) throws IOException
+	public static void testRanking(TestingData testingData) throws IOException
     {
 		// ------------------------------
 		float[] PrecisionSum = new float[topK+1];
@@ -486,13 +467,13 @@ public class BPR_15_RN_copy
 			// ------------------------------
 			}
 			
-			if(!TestData.containsKey(u))
+			if(!testingData.doesUserExist(u))
 				continue;
 			
 			UserNum_TestData++;
 			
 			// --- the number of preferred items of user $u$ in the test data 
-			HashSet<Integer> ItemSet_u_TestData = TestData.get(u);
+			Set<Integer> ItemSet_u_TestData = testingData.getRatedItems(u);
     		int ItemNum_u_TestData = ItemSet_u_TestData.size();    
 			
 			// --- TopK evaluation
