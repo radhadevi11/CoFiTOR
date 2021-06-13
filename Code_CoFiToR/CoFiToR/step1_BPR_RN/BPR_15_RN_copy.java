@@ -1,3 +1,4 @@
+import refactor.Model;
 import refactor.TestingData;
 import refactor.TrainingData;
 
@@ -53,6 +54,8 @@ public class BPR_15_RN_copy
     public static float[][] U;
     public static float[][] V;
     public static float[] biasV; // bias of item
+
+	public static Model model;
 	
 	// === normalized rating
 	public static float[] rating_weight;
@@ -228,46 +231,21 @@ public class BPR_15_RN_copy
 		
 		// ------------------------------  	
     	// --- initialization of U and V
-		populateVectorMatrix(n, U);
-		//
-		populateVectorMatrix(m, V);
+		model = new Model(d, n, m, item -> trainingData.getRatedItemCount(item));
+
 		// ------------------------------
     	
     	// ------------------------------
     	// --- initialization of biasV
-    	float g_avg = 0;
-		g_avg = computeGAvg(g_avg);
-		g_avg = g_avg/n/m;
-    	System.out.println( "The global average rating:" + Float.toString(g_avg) );
 
-		populateBiasV(g_avg);
+
+
+
 		// ------------------------------
     }
 
-	private static void populateBiasV(float g_avg) {
-		for (int i=1; i<m+1; i++)
-		{
-			 biasV[i]= (float) trainingData.getRatedItemCount().get(i) / n - g_avg;
-		}
-	}
-
-	private static float computeGAvg(float g_avg) {
-		for (int i=1; i<m+1; i++)
-		{
-			g_avg += trainingData.getRatedItemCount().get(i);
-		}
-		return g_avg;
-	}
-
-	private static void populateVectorMatrix(int n, float[][] u2) {
-		for (int u = 1; u < n + 1; u++) {
-			for (int f = 0; f < d; f++) {
-				u2[u][f] = (float) ((Math.random() - 0.5) * 0.01);
-			}
 
 
-		}
-	}
 	// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     
     
