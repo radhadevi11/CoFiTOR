@@ -74,8 +74,15 @@ public class ConfigMapper {
             else if (args[k].equals("-fnOutputCandidateItems"))
                 fnOutputCandidateItems = args[++k];
         }
-        return new Configuration(d, alpha_u, alpha_v, beta_v, gamma, fnTrainData, fnTestData,
-                fnItemERTData, fnUserERTData, fnOutputCandidateItems, n, m, num_train, num_iterations,
-                rtype, topK);
+        return new Configuration.ConfigBuilder(fnTrainData, fnTestData, fnItemERTData, fnUserERTData,
+                fnOutputCandidateItems, n, m)
+                .d(d)
+                .Alpha_u(alpha_u)
+                .Alpha_v(alpha_v)
+                .Beta_v(beta_v)
+                .Gamma(gamma)
+                .Num_iterations(num_iterations)
+                .Rtype(rtype).TopK(topK)
+                .build();
     }
 }

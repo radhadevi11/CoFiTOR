@@ -8,37 +8,20 @@ public class Model {
     private  float[][] V;
     private  float[] biasV;
     private Configuration configuration;
-    private float ratingWeight[];
+
 
     public Model(Configuration configuration, Function<Integer, Integer> itemCountProvider) {
         this.configuration = configuration;
-        ratingWeight = new float[this.configuration.getRtype()+1];
+
         U = new float[this.configuration.getN()+1][this.configuration.getD()];
         V = new float[this.configuration.getM()+1][this.configuration.getD()];
         biasV = new float[this.configuration.getM()+1];
         populateVectorMatrix(this.configuration.getN(), this.configuration.getD(), U);
         populateVectorMatrix(this.configuration.getM(), this.configuration.getD(), V);
         populateBiasV(itemCountProvider);
-        populateRatingWeight();
+
     }
 
-    private void populateRatingWeight() {
-        float denominator =(float) Math.pow(2, 5);
-        if(configuration.getRtype() == 5){
-            for(int i=1; i<=5; i++)
-                ratingWeight[i] = (float) ((Math.pow(2, i)-1)/denominator);
-        }
-        else if(configuration.getRtype() == 10){
-            for(float i = 0.5f; i<=5f; i=i+0.5f){
-                int loc = (int)i*2;
-                ratingWeight[loc] = (float) ((Math.pow(2, i)-1)/denominator);
-            }
-        }
-    }
-
-    public float getRatingWeight (int rating) {
-        return this.ratingWeight[rating];
-    }
 
     private  void populateVectorMatrix(int n, int d, float[][] u2) {
         for (int u = 1; u < n + 1; u++) {
@@ -90,11 +73,11 @@ public class Model {
         float r_ui = 0f;
         if(configuration.getRtype() == 5){
             int loc = (int)rating;
-            r_ui = ratingWeight[loc];
+            r_ui = configuration.getRatingWeight(loc);
         }
         else if(configuration.getRtype() == 10){
             int loc = (int)rating*2;
-            r_ui = ratingWeight[loc];
+            r_ui = configuration.getRatingWeight(loc);
         }
         float r_uij = biasV[i] - biasV[j];
         for (int f = 0; f < this.configuration.getD(); f++) {

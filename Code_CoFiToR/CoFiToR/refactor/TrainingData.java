@@ -88,4 +88,9 @@ public class TrainingData {
         return this.ratedItemCount.get(itemId);
     }
 
+    public int getNumTrain() {
+        return numTrain;
+    }
+
+
 }
