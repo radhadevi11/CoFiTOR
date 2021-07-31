@@ -12,7 +12,9 @@ public class BPR_15_RN_copy
 	public static Model model;
 	public static ConfigMapper configMapper = new ConfigMapper();
 	public static Configuration configuration;
-    public static void main(String[] args) throws Exception
+
+
+    public void main(String[] args) throws Exception
     {
 
         configuration = configMapper.toConfiguration(args);
@@ -54,7 +56,7 @@ public class BPR_15_RN_copy
 	
 	
     // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    public static void readDataTrainTest() throws Exception
+    public  void readDataTrainTest() throws Exception
 	{
 		trainingData = new TrainingData(configuration.getFnTrainData());
 		testingData = new TestingData(configuration.getFnTestData());
@@ -73,7 +75,7 @@ public class BPR_15_RN_copy
     
     
     // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    public static void initializeModel()
+    public  void initializeModel()
     {
     	// --- initialization of U and V
 		model = new Model(configuration, item -> trainingData.getRatedItemCount(item));
@@ -86,7 +88,7 @@ public class BPR_15_RN_copy
     
     
     // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    public static void train() throws IOException
+    public  void train() throws IOException
 	{
 
 		for (int iter = 0; iter < configuration.getNum_iterations(); iter++) {
@@ -107,7 +109,7 @@ public class BPR_15_RN_copy
 		}
 	}
 
-	private static int getNonExaminedItemId(Map<Integer, Float> item_Rating) {
+	private  int getNonExaminedItemId(Map<Integer, Float> item_Rating) {
 		int j;
 		while (true) {
 
@@ -130,7 +132,7 @@ public class BPR_15_RN_copy
 //	}
     
 	// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++		
-	public static void testRanking(TestingData testingData) throws IOException
+	public  void testRanking(TestingData testingData) throws IOException
     {
 		// ------------------------------
 
@@ -156,7 +158,7 @@ public class BPR_15_RN_copy
 			if (!trainingData.doesUserExist(u))
 				continue;
 
-			// --- item-rating paris train set of user $u$
+			// --- item-rating paris train set of user $u$4
 			Map<Integer,Float> ItemSet_u_TrainData = new HashMap<>();
 			if (trainingData.doesUserExist(u)) {
 				ItemSet_u_TrainData = trainingData.getRatedItems(u);
@@ -219,7 +221,7 @@ public class BPR_15_RN_copy
 	}
 
 
-	private static List<Entry<Integer, Float>> predictForUser(int u, Map<Integer, Float> itemSet_u_TrainData) {
+	private  List<Entry<Integer, Float>> predictForUser(int u, Map<Integer, Float> itemSet_u_TrainData) {
 		HashMap<Integer, Float> item2Prediction = new HashMap<Integer, Float>();
 		item2Prediction.clear();
 
